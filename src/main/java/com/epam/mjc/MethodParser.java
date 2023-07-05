@@ -1,5 +1,10 @@
 package com.epam.mjc;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class MethodParser {
 
     /**
@@ -19,7 +24,43 @@ public class MethodParser {
      * @param signatureString source string to parse
      * @return {@link MethodSignature} object filled with parsed values from source string
      */
+
+
     public MethodSignature parseFunction(String signatureString) {
-        throw new UnsupportedOperationException("You should implement this method.");
+
+        String regexModifier = "(?:(public|protected|private)\\s+)?";
+        String regexReturn = "(\\w+)\\s+";
+        String regexMethodName = "(\\w+)";
+        String regexArguments = "\\((.*?)\\)";
+
+        String regex = regexModifier + regexReturn + regexMethodName + regexArguments;
+
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(signatureString);
+        if (matcher.find()) {
+            String accessModifier = matcher.group(1);
+            String returnType = matcher.group(2);
+            String methodName = matcher.group(3);
+            String argumentsString = matcher.group(4);
+            List<MethodSignature.Argument> arguments = new ArrayList<>();
+            String argumentRegex = "(\\w+)\\s+(\\w+)";
+            Pattern argumentPattern = Pattern.compile(argumentRegex);
+            Matcher argumentMatcher = argumentPattern.matcher(argumentsString);
+
+            while (argumentMatcher.find()) {
+                String argumentType = argumentMatcher.group(1);
+                String argumentName = argumentMatcher.group(2);
+
+                MethodSignature.Argument argument = new MethodSignature.Argument(argumentType, argumentName);
+                arguments.add(argument);
+            }
+            MethodSignature methodSignature = new MethodSignature(methodName, arguments);
+            methodSignature.setAccessModifier(accessModifier);
+            methodSignature.setReturnType(returnType);
+
+            return methodSignature;
+        }
+
+        throw new UnsupportedOperationException("Sad");
     }
 }
